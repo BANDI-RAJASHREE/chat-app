@@ -1,10 +1,12 @@
 import { X } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import { useNavigate } from "react-router-dom";
 
 const ChatHeader = () => {
   const { selectedUser, setSelectedUser } = useChatStore();
   const { onlineUsers } = useAuthStore();
+  const navigate = useNavigate();
 
   return (
     <div className="p-2.5 border-b border-base-300">
@@ -27,7 +29,12 @@ const ChatHeader = () => {
         </div>
 
         {/* Close button */}
-        <button onClick={() => setSelectedUser(null)}>
+        <button
+          onClick={() => {
+            setSelectedUser(null);
+            navigate(`/`);
+          }}
+        >
           <X />
         </button>
       </div>
