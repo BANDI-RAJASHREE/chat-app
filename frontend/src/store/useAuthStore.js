@@ -31,10 +31,9 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true });
     try {
-      const resData = await api.post("/auth/signup", data);
-      set({ authUser: resData });
+      await api.post("/auth/signup", data);
+      await get().checkAuth();
       toast.success("Account created successfully");
-      get().connectSocket();
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -45,11 +44,9 @@ export const useAuthStore = create((set, get) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      const resData = await api.post("/auth/login", data);
-      set({ authUser: resData });
+      await api.post("/auth/login", data);
+      await get().checkAuth();
       toast.success("Logged in successfully");
-
-      get().connectSocket();
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -95,6 +92,7 @@ export const useAuthStore = create((set, get) => ({
       set({ onlineUsers: userIds });
     });
   },
+
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
   },
