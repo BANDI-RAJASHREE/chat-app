@@ -40,13 +40,16 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic } = req.body;
-    if (!profilePic) return res.status(400).json({ message: "Profile pic is required" });
+    const { fullName, profilePic } = req.body;
+    let updatedUser;
 
-    // upload to cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    if (profilePic) {
+      const uploadResponse = await cloudinary.uploader.upload(profilePic);
+      updatedUser = await authService.updateProfileService(req.user._id, fullName, uploadResponse.secure_url);
+    } else {
+      updatedUser = await authService.updateProfileService(req.user._id, fullName, null);
+    }
 
-    const updatedUser = await authService.updateProfileService(req.user._id, uploadResponse.secure_url);
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error("error in update profile:", error);

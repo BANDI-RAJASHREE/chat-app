@@ -27,8 +27,12 @@ export const loginService = async ({ email, password }, res) => {
   return user;
 };
 
-export const updateProfileService = async (userId, profilePic) => {
-  return userDao.updateById(userId, { profilePic });
+export const updateProfileService = async (userId, fullName, profilePic) => {
+  const update = {};
+  if (fullName) update.fullName = fullName;
+  if (profilePic) update.profilePic = profilePic;
+
+  return userDao.updateById(userId, update);
 };
 
 export default { signupService, loginService, updateProfileService };
