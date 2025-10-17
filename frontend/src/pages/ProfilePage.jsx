@@ -5,6 +5,7 @@ import { Camera, Mail, User } from "lucide-react";
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
+  const [fullName, setFullName] = useState(authUser?.fullName || "");
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -17,8 +18,12 @@ const ProfilePage = () => {
     reader.onload = async () => {
       const base64Image = reader.result;
       setSelectedImg(base64Image);
-      await updateProfile({ profilePic: base64Image });
+      await updateProfile({ profilePic: base64Image, fullName: fullName });
     };
+  };
+
+  const handleSaveProfile = async () => {
+    await updateProfile({ fullName, profilePic: selectedImg || authUser?.profilePic });
   };
 
   return (
@@ -71,7 +76,12 @@ const ProfilePage = () => {
                 <User className="w-4 h-4" />
                 Full Name
               </div>
-              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.fullName}</p>
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 bg-base-200 rounded-lg border"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -94,6 +104,15 @@ const ProfilePage = () => {
                 <span>Account Status</span>
                 <span className="text-green-500">Active</span>
               </div>
+            </div>
+            <div className="mt-4 text-right">
+              <button
+                className="btn btn-sm"
+                onClick={handleSaveProfile}
+                disabled={isUpdatingProfile}
+              >
+                Save Profile
+              </button>
             </div>
           </div>
         </div>
