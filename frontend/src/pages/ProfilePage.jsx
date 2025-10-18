@@ -5,11 +5,24 @@ import { Camera, Mail, User } from "lucide-react";
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
+  const [isRemovedLocally, setIsRemovedLocally] = useState(false);
   const [fullName, setFullName] = useState(authUser?.fullName || "");
+
+  const handleRemoveProfile = async () => {
+    setSelectedImg(null);
+    setIsRemovedLocally(true);
+
+    try {
+      await updateProfile({ profilePic: null });
+    } catch (err) {
+      setIsRemovedLocally(false);
+    }
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const input = e.target;
 
     const reader = new FileReader();
 
@@ -17,8 +30,16 @@ const ProfilePage = () => {
 
     reader.onload = async () => {
       const base64Image = reader.result;
+      setIsRemovedLocally(false);
       setSelectedImg(base64Image);
-      await updateProfile({ profilePic: base64Image, fullName: fullName });
+
+      try {
+        await updateProfile({ profilePic: base64Image, fullName: fullName });
+        setSelectedImg(null);
+        setIsRemovedLocally(false);
+      } finally {
+        try { input.value = ""; } catch (err) {}
+      }
     };
   };
 
@@ -27,9 +48,9 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="h-screen pt-20">
-      <div className="max-w-2xl mx-auto p-4 py-8">
-        <div className="bg-base-300 rounded-xl p-6 space-y-8">
+    <div className="h-screen bg-base-200">
+      <div className="flex items-center justify-center pt-20 px-4">
+  <div className="bg-base-100 rounded-lg shadow-cl w-full max-w-2xl p-6 h-[calc(100vh-8rem)] overflow-auto">
           <div className="text-center">
             <h1 className="text-2xl font-semibold ">Profile</h1>
             <p className="mt-2">Your profile information</p>
@@ -38,18 +59,19 @@ const ProfilePage = () => {
           {/* avatar upload section */}
 
           <div className="flex flex-col items-center gap-4">
-            <div className="relative">
+            <div className="relative w-32 h-32">
               <img
-                src={selectedImg || authUser.profilePic || "/avatar.png"}
+                src={selectedImg || (isRemovedLocally ? null : authUser?.profilePic) || "/avatar.png"}
                 alt="Profile"
-                className="size-32 rounded-full object-cover border-4 "
+                className="w-full h-full rounded-full object-cover border-4 border-base-200 shadow-sm"
               />
+
               <label
                 htmlFor="avatar-upload"
                 className={`
-                  absolute bottom-0 right-0 
+                  absolute bottom-1 right-1 z-10
                   bg-base-content hover:scale-105
-                  p-2 rounded-full cursor-pointer 
+                  p-1.5 rounded-full cursor-pointer 
                   transition-all duration-200
                   ${isUpdatingProfile ? "animate-pulse pointer-events-none" : ""}
                 `}
@@ -65,9 +87,21 @@ const ProfilePage = () => {
                 />
               </label>
             </div>
-            <p className="text-sm text-zinc-400">
-              {isUpdatingProfile ? "Uploading..." : "Click the camera icon to update your photo"}
-            </p>
+
+            <div className="flex flex-col items-center gap-2 mt-2">
+              <p className="text-sm text-zinc-400">
+                {isUpdatingProfile ? "Uploading..." : "Click the camera icon to update your photo"}
+              </p>
+
+              <button
+                type="button"
+                onClick={handleRemoveProfile}
+                className={`px-3 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-all duration-200 ${isUpdatingProfile ? "opacity-50 pointer-events-none" : ""}`}
+                disabled={isUpdatingProfile}
+              >
+                Remove ProfilePic
+              </button>
+            </div>
           </div>
 
           <div className="space-y-6">

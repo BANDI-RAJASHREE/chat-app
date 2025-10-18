@@ -40,14 +40,19 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { fullName, profilePic } = req.body;
+    const { fullName } = req.body;
     let updatedUser;
 
-    if (profilePic) {
-      const uploadResponse = await cloudinary.uploader.upload(profilePic);
-      updatedUser = await authService.updateProfileService(req.user._id, fullName, uploadResponse.secure_url);
+    if (Object.prototype.hasOwnProperty.call(req.body, "profilePic")) {
+      const profilePic = req.body.profilePic; 
+      if (profilePic) {
+        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        updatedUser = await authService.updateProfileService(req.user._id, fullName, uploadResponse.secure_url);
+      } else {
+        updatedUser = await authService.updateProfileService(req.user._id, fullName, null);
+      }
     } else {
-      updatedUser = await authService.updateProfileService(req.user._id, fullName, null);
+      updatedUser = await authService.updateProfileService(req.user._id, fullName, undefined);
     }
 
     res.status(200).json(updatedUser);
